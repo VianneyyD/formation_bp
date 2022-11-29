@@ -1,17 +1,22 @@
+# Import données ----
+## Packages ----
 if (!require("ggplot2")) install.packages("ggplot2")
 if (!require("stringr")) install.packages("stringr")
 if (!require("dplyr")) install.packages("dplyr")
 if (!require("tidyverse")) install.packages("tidyverse")
 
-
 library(tidyverse)
 library(dplyr)
+library(MASS)
+
+
+## Données ----
 
 # j'importe les données avec read_csv2 parce que c'est un csv avec des ;
 # et que read_csv attend comme separateur des ,
 df <- readr::read_csv2(
   "individu_reg.csv",
-  col_names = c(
+  col_select = c(
     "region", "aemm", "aged", "anai", "catl", "cs1", "cs2", "cs3",
     "couple", "na38", "naf08", "pnai12", "sexe", "surf", "tp",
     "trans", "ur"
@@ -30,8 +35,8 @@ df2 <- df %>%
   ))
 print(df2, 20)
 
-
-# combien de professions
+# Statistiques decriptives ----
+## Nombre de professions ----
 print("Nombre de professions :")
 print(summarise(df2, length(unique(unlist(cs3[!is.na(cs1)])))))
 print("Nombre de professions :''")
@@ -42,6 +47,7 @@ print(summarise(df2, length(unique(unlist(cs3[!is.na(cs3)])))))
 print_data_frame <- summarise(group_by(df2, aged), n())
 print(print_data_frame)
 
+## Mise en forme et sorties graphiques ----
 decennie_a_partir_annee <- function(annee) {
   return(annee - annee %% 10)
 }
@@ -51,6 +57,7 @@ df2 %>%
   select(aged) %>%
   ggplot(.) +
   geom_histogram(aes(x = 5 * floor(as.numeric(aged) / 5)), stat = "count")
+
 
 ggplot(df2[as.numeric(df2$aged) > 50, c(3, 4)], aes(
   x = as.numeric(aged),
@@ -74,7 +81,7 @@ ggplot(df %>%
   ) +
   coord_cartesian(c(0, 100))
 
-# stats surf par statut
+# stats surf par statut 
 df3 <- tibble(df2 %>%
                 group_by(couple, surf) %>%
                 summarise(x = n()) %>%
@@ -150,8 +157,7 @@ fonction_de_stat_agregee(df2 %>%
 
 api_pwd <- "trotskitueleski$1917"
 
-# modelisation
-library(MASS)
+# modelisation ----
 df3 <- df2 %>%
   dplyr::select(surf, cs1, ur, couple, aged) %>%
   filter(surf != "Z")
